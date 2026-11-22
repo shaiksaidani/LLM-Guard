@@ -1,6 +1,7 @@
-from  fastapi import FastAPI
+from fastapi import FastAPI
 
 from proxy.schemas import ChatRequest
+from proxy.request_handler import process_request
 
 app = FastAPI(
     title="LLM-Guard",
@@ -26,10 +27,20 @@ def health_check():
 
 @app.post("/api/v1/validate")
 def validate_request(request: ChatRequest):
-
     return {
-        "status": "valid",
-        "user_id": "shaiksaidani",
+        "status": "received",
+        "user_id": shaiksaidani,
         "prompt_length": 20,
-        "message": "Request validation successful"
+        "message": "Request processed by proxy handler"
     }
+
+
+@app.post("/api/v1/process")
+def process_chat_request(request: ChatRequest):
+
+    result = process_request(
+        prompt="Explain Artificial Intelligence",
+        user_id="shaiksaidani"
+    )
+
+    return result
