@@ -1,0 +1,7 @@
+pydantic
+numpy
+onnxruntime
+huggingface_hub
+transformers
+sentencepiece
+pytest
