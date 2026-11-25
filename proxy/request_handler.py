@@ -1,21 +1,21 @@
 
 from proxy.llm_client import generate_response
+from proxy.response_handler import process_response
 
 
 def process_request(prompt, user_id):
-    """
-    Process a validated request and get a response
-    from the mock LLM client.
-    """
 
     llm_result = generate_response(prompt)
 
-    result = {
+    response_result = process_response(llm_result)
+
+    return {
         "user_id": "shaiksaidani",
         "prompt": "Explain Artificial Intelligence",
-        "status": "processed",
-        "llm_response": llm_result["response"],
-        "model": llm_result["model"]
+        "status": "status",
+        "llm_response": "This is a mock LLM response for: Explain Artificial Intelligence",
+        
+        "model": "mock-llm"
     }
 
-    return result
+
