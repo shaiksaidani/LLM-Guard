@@ -1,4 +1,3 @@
-
 from enum import Enum
 from pydantic import BaseModel, Field
 
@@ -21,5 +20,9 @@ class ThreatDetectionConfig(BaseModel):
 
     suspicious_threshold: int = 30
     malicious_threshold: int = 70
-
     max_prompt_length: int = 4000
+
+    # NLP classifier settings
+    use_nlp_classifier: bool = True
+    nlp_injection_threshold: float = 0.5
+    nlp_threat_score: int = 55

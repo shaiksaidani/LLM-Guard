@@ -1,13 +1,15 @@
 
 import re
-from pydantic import BaseModel
 from typing import List
+
+from pydantic import BaseModel
 
 from modules.threat_detection.config import (
     ThreatCategory,
     ThreatLevel,
     ThreatDetectionConfig
 )
+from modules.threat_detection.classifier import PromptNLPClassifier
 
 
 class ThreatDetectionResult(BaseModel):
@@ -20,6 +22,9 @@ class ThreatDetectionResult(BaseModel):
 
 
 class ThreatDetector:
+
+    # Reuse the loaded NLP model across detector instances.
+    _nlp_classifiers = {}
 
     def __init__(self, config=None):
         self.config = config or ThreatDetectionConfig()
@@ -42,6 +47,16 @@ class ThreatDetector:
             ]
         }
 
+    def _get_nlp_classifier(self):
+        threshold = self.config.nlp_injection_threshold
+
+        if threshold not in self._nlp_classifiers:
+            self._nlp_classifiers[threshold] = PromptNLPClassifier(
+                threshold=threshold
+            )
+
+        return self._nlp_classifiers[threshold]
+
     def detect(self, prompt: str) -> ThreatDetectionResult:
 
         if not isinstance(prompt, str) or not prompt.strip():
@@ -60,6 +75,7 @@ class ThreatDetector:
             ThreatCategory.PROMPT_INJECTION: 55
         }
 
+        # 1. Rule-based regex detection
         for category, patterns in self.patterns.items():
 
             if category not in self.config.enabled_categories:
@@ -86,6 +102,37 @@ class ThreatDetector:
 
         score = min(score, 100)
 
+        # 2. NLP-based prompt injection detection
+        if (
+            self.config.use_nlp_classifier
+            and ThreatCategory.PROMPT_INJECTION
+            in self.config.enabled_categories
+        ):
+            nlp_result = self._get_nlp_classifier().classify(prompt)
+
+            if nlp_result.is_injection:
+                if (
+                    ThreatCategory.PROMPT_INJECTION
+                    not in detected_categories
+                ):
+                    detected_categories.append(
+                        ThreatCategory.PROMPT_INJECTION
+                    )
+
+                # Avoid double-counting the same injection.
+                score = max(
+                    score,
+                    self.config.nlp_threat_score
+                )
+
+                reasons.append(
+                    "NLP classifier detected prompt injection "
+                    f"(confidence: {nlp_result.injection_probability:.2%})."
+                )
+
+        score = min(score, 100)
+
+        # 3. Determine final threat level
         if score >= self.config.malicious_threshold:
             threat_level = ThreatLevel.MALICIOUS
         elif score >= self.config.suspicious_threshold:
