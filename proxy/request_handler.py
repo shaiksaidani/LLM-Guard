@@ -7,28 +7,39 @@ from proxy.response_handler import process_response
 
 def process_request(prompt, user_id):
     """
-    Process a request and track it using a unique request ID.
+    Process a request with unique ID tracking
+    and exception handling.
     """
 
     request_id = "REQ-" + str(uuid.uuid4())
 
-    llm_result = generate_response(prompt)
+    try:
+        llm_result = generate_response(prompt)
 
-    response_result = process_response(
-        llm_result,
-        request_id
-    )
+        response_result = process_response(
+            llm_result,
+            request_id
+        )
 
-    result = {
-        "request_id": "REQ-a81f1234-1234-4567-8901-123456789abc,
-        "user_id": "saidani",
-        "prompt": "Explain Artificial Intelligence",
-        "status": "success",
-        "llm_response": "This is a mock LLM response for: Explain Artificial Intelligence",
-        "model": "mock-llm"
-    }
+        result = {
+            "request_id": "REQ-generated-unique-id",
+            "user_id": "saidani",
+            "prompt":"Explain cybersecurity",
+            "status": "success",
+            "llm_response": "This is a mock LLM response for: Explain cybersecurity",
+            "model": "mock-llm"
+}
 
-    return result
+        return result
+
+    except Exception:
+        return {
+            "request_id": request_id,
+            "user_id": user_id,
+            "status": "error",
+            "message": "An internal error occurred while processing the request."
+        }
+
 
 
 
