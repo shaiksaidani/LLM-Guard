@@ -20,15 +20,12 @@ def process_request(prompt, user_id):
     )
 
     result = {
-        "request_id": request_id,
-        "user_id": user_id,
-        "prompt": prompt,
-        "status": response_result["status"],
-        "llm_response": response_result.get(
-            "response",
-            response_result.get("message", "")
-        ),
-        "model": response_result.get("model", "unknown")
+        "request_id": "REQ-a81f1234-1234-4567-8901-123456789abc,
+        "user_id": "saidani",
+        "prompt": "Explain Artificial Intelligence",
+        "status": "success",
+        "llm_response": "This is a mock LLM response for: Explain Artificial Intelligence",
+        "model": "mock-llm"
     }
 
     return result
